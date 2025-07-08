@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    .dropdown-container {
+      z-index: 2;
+    }
+
+    .dropdown-container {
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* centers child elements horizontally */
+      justify-content: center;
+      /* optional: centers vertically if height set */
+      text-align: center;
+      /* centers inline text like <h1> */
+      margin: 2rem auto;
+      /* centers container horizontally if width specified */
+      max-width: 400px;
+      /* optional: limits width for better appearance */
+    }
+
+    select {
+      font-size: 1rem;
+      padding: 0.5rem;
+      border-radius: 5px;
+      border: none;
+      width: 100%;
+      /* Make select take full width of its container */
+      max-width: 250px;
+      /* Limit max width */
+    }
+
+
+    .skip-button {
+      margin-top: 0.75rem;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.85rem;
+      font-style: italic;
+      background: rgba(0, 0, 0, 0.3);
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    #result-message {
+      text-align: center;
+      margin: 100px auto 2rem auto;
+      font-size: 1.2rem;
+      max-width: 600px;
+    }
+
+    h1,
+    h2 {
+      max-width: 600px;
+      /* fixed width to limit line length */
+      margin: 4rem auto 2rem auto;
+      /* centers horizontally with vertical spacing */
+      line-height: 1.2;
+      /* optional: tighter lines */
+      font-weight: 700;
+      /* keep it bold */
+      /* optionally reduce font-size slightly */
+      /* font-size: 2rem; */
+    }
+
+    p {
+      max-width: 50%;
+      font-family: sans-serif;
+      margin: 0 auto 2rem auto;
+      font-size: 19px;
+    }
+
+    #scrolly {
+      position: relative;
+      padding: 1rem;
+    }
+
+    .scrolly-overlay {
+      position: relative;
+      padding: 0;
+      max-width: 35rem;
+      margin-left: 2px;
+      margin-right: auto;
+    }
+
+    .sticky-thing {
+      position: -webkit-sticky;
+      position: sticky;
+      left: 0;
+      width: 100%;
+      margin: 0;
+      z-index: 0;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .step {
+      margin: 0 auto 2rem auto;
+      margin-bottom: 25rem;
+      background-color: #fff;
+      color: black;
+      text-align: center;
+    }
+
+    .step p {
+      padding: 1rem;
+      font-size: 1.25rem;
+      border: black;
+    }
+
+    .photoDiv {
+      width: 49%;
+      margin-right: 0px;
+      margin-left: auto;
+      display: block;
+    }
+
+    .chart-container {
+      max-width: 100%;
+      margin: 0 auto 2rem auto;
+    }
+
+    .chart-container.narrow {
+      max-width: 50%;
+    }
+
+    .hidden {
+      visibility: hidden;
+    }
+
+    @media only screen and (min-width: 700px) {
+      #scrolly.side-by-side {
+        display: flex;
+      }
+
+      #scrolly.side-by-side>div {
+        flex-basis: 0;
+        flex-grow: 1;
+        flex-shrink: 1;
+        padding: 0.75em;
+      }
+
+      #scrolly.side-by-side .scrolly-overlay {
+        margin-top: 70vh;
+        order: 0;
+        min-width: 15rem;
+        max-width: 20rem;
+      }
+
+      #scrolly.side-by-side .sticky-thing {
+        order: 1;
+        flex-grow: 2;
+      }
+    }
+
+    /* Center the intro box vertically & horizontally with flexbox */
+    #intro-box {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 80vh;
+      max-width: 400px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.85);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    /* Optional: full-page background color or image */
+    body {
+      background-size: cover;
+      background-color: #f0f4f8;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #222;
+    }
+  </style>
+  <script src="https://unpkg.com/intersection-observer@0.5.1/intersection-observer.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/scrollama/3.0.4/scrollama.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.3.0/d3.min.js"></script>
+</head>
+
+
+<head>
+  <!-- Header -->
+  <header class="header">
+    <div id="intro-box" style="text-align: center; max-width: 600px; margin: 3rem auto;">
+      <h1 style="font-size: 2rem;">Which Brazilian State do you live in?</h1>
+      <select name="state" id="state-select" onchange="showMessage()"
+        style="font-size: 1rem; padding: 0.5rem; border-radius: 5px; margin-top: 1rem;">
+        <option value="">--Select a state--</option>
+        <option value="AC">Acre</option>
+        <option value="AL">Alagoas</option>
+        <option value="AP">Amapá</option>
+        <option value="AM">Amazonas</option>
+        <option value="BA">Bahia</option>
+        <option value="CE">Ceará</option>
+        <option value="DF">Distrito Federal</option>
+        <option value="ES">Espírito Santo</option>
+        <option value="GO">Goiás</option>
+        <option value="MA">Maranhão</option>
+        <option value="MT">Mato Grosso</option>
+        <option value="MS">Mato Grosso do Sul</option>
+        <option value="MG">Minas Gerais</option>
+        <option value="PA">Pará</option>
+        <option value="PB">Paraíba</option>
+        <option value="PR">Paraná</option>
+        <option value="PE">Pernambuco</option>
+        <option value="PI">Piauí</option>
+        <option value="RJ">Rio de Janeiro</option>
+        <option value="RN">Rio Grande do Norte</option>
+        <option value="RS">Rio Grande do Sul</option>
+        <option value="RO">Rondônia</option>
+        <option value="RR">Roraima</option>
+        <option value="SC">Santa Catarina</option>
+        <option value="SP">São Paulo</option>
+        <option value="SE">Sergipe</option>
+        <option value="TO">Tocantins</option>
+      </select>
+      <br />
+      <button class="skip-button" onclick="skipToStory()">Skip</button>
+    </div>
+  </header>
+
+  <!-- STATE RESULT CONTAINER -->
+  <div id="state-response" style="display: none; text-align: center; max-width: 600px; margin: 2rem auto;">
+    <p id="result-message"></p>
+    <img id="highlighted-map" src="" style="display: none; max-width: 100%;" />
+    <div class="chart-container">
+      <iframe title="Halted projects in Brazil" aria-label="Map" src="https://datawrapper.dwcdn.net/ZTptt/1/"
+        scrolling="no" frameborder="0" style="width: 100%; height: 750px; border: none;" data-external="1">
+      </iframe>
+    </div>
+  </div>
+
+  <!-- STORY CONTENT CONTAINER (hidden initially) -->
+  <div id="story-container" style="display: none; padding: 0 1rem;">
+    <h2 id="story-headline">Stalled projects in Brazil outnumber active ones</h2>
+    <div class="byline">
+      <p>By Julia Affonso</a></p>
+    </div>
+    <p>As of April 2025, Brazil had 11,469 unfinished projects. These include schools, daycares, hospitals, highways and
+      street paving, among others.</p>
+
+    <p>The total value of contracts for these halted projects amounts to approximately US$5.6 billion (R$34 billion in
+      Brazilian currency).</p>
+    <p> The most common reasons for interruptions include technical difficulties, decisions made by public officials,
+      and
+      abandonment by the companies hired to complete the work.
+    </p>
+
+    <!-- STORY CHART (shown only after skip) -->
+    <div id="story-map" class="chart-container narrow" style="display: none;">
+      <iframe title="Halted projects in Brazil" aria-label="Map" src="https://datawrapper.dwcdn.net/ZTptt/1/"
+        scrolling="no" frameborder="0" style="width: 100%; height: 621px; border: none;" data-external="1">
+      </iframe>
+    </div>
+
+    <section id="scrolly">
+      <div class="sticky-thing">
+        <div id="photoContainer" class="photoDiv">
+          <img id="scrollyPhoto" src="" style="width: 100%; display: none;" />
+          <iframe id="step2Chart" title="Halted projects in Brazil" aria-label="Map" src="" scrolling="no"
+            frameborder="0" style="display: none; width: 100%; height: 621px; border: none;" data-external="1"></iframe>
+        </div>
+      </div>
+
+      <div class="scrolly-overlay">
+        <div class="step" id="step1">
+          <p>A sign outside a daycare center under construction in the city of Governador Édison Lobão once read:
+            "Federal
+            government investment here."</p>
+          <p>By the time a photo was taken in August 2014, part of the text had already faded under the sun, making the
+            full message difficult to read. </p>
+          <p>The daycare was meant to serve a small town of 18,000 people in Maranhão, the state with the highest number
+            of stalled projects.</p>
+        </div>
+        <div class="step" id="step2">
+          <p>It’s unclear whether the sign is still there. What is certain, however, is that the daycare center was
+            never
+            completed.</p>
+          <p>Construction began in November 2011, with an expected duration of just nine months, according to Brazil’s
+            Ministry of Education. Yet the project remains officially listed as halted to this day.</p>
+          <p>A study conducted by the Ministry in 2024 revealed that, as of August, 40 children under the age of four
+            were
+            on a waiting list for a spot at the daycare.</p>
+        </div>
+      </div>
+    </section>
+
+    <p>The number of stalled projects in the country surpassed the number of active ones in April 2024, according to
+      data
+      from the Federal Court of Accounts -- an independent body that works alongside Congress to oversee and audit the
+      use
+      of
+      federal funds.</p>
+    <p>Despite a slight improvement between last year and 2025, the number of halted projects still outnumbers the
+      number
+      of active ones.</p>
+
+    <div class="chart-container narrow">
+      <iframe title="Number of active and halted public projects in Brazil" aria-label="Interactive line chart"
+        id="datawrapper-chart-LBCL2" src="https://datawrapper.dwcdn.net/LBCL2/1/" scrolling="no" frameborder="0"
+        style="width: 100%; border: none;" height="489" data-external="1"></iframe>
+    </div>
+
+    <p>On average, projects are paralyzed with just 0.44% of their execution completed.</p>
+    <p>Stalled projects are a serious issue worldwide, and Brazil is no exception. When construction comes to a halt,
+      society bears both social and financial costs.</p>
+    <p>For example:</p>
+
+    <p>- Roads, schools, and hospitals are essential services. Without them, communities are left underserved.</p>
+
+    <p>- Inflation increases the cost of labor and construction materials over time.</p>
+
+    <p>- Unfinished structures deteriorate, leading to higher costs for repairs or rework.</p>
+    <p>A comparison between the data on halted projects and the Human Development Index (HDI) of each Brazilian state
+      shows that several states with a higher number of unfinished works also have lower HDI scores.</p>
+    <p>The HDI is a summary measure of development that considers health, education, and standard of living. The index was released in 2021.</p>
+
+    <div class="chart-container narrow">
+      <iframe title="States with more halted projects have lower HDI" aria-label="Stacked Bars"
+        id="datawrapper-chart-b4MWS" src="https://datawrapper.dwcdn.net/b4MWS/1/" scrolling="no" frameborder="0"
+        style="width: 0; min-width: 100% !important; border: none;" height="232" data-external="1"></iframe>
+    </div>
+
+    <p>Since the Federal Court of Accounts published the data in April 2025, the situation may have changed. Some
+      projects may have resumed, while others might have been added to the list of unfinished works.</p>
+    <!-- end story-container -->
+  </div>
+
+
+  <!-- JS Logic -->
+  <script>
+    const data = {
+      AC: 152, AL: 256, AP: 152, AM: 438, BA: 926, CE: 657, DF: 21, ES: 131,
+      GO: 424, MA: 1225, MT: 214, MS: 165, MG: 874, PA: 889, PB: 552, PR: 219,
+      PE: 567, PI: 503, RJ: 525, RN: 508, RS: 467, RO: 144, RR: 104, SC: 169,
+      SP: 698, SE: 161, TO: 328
+    };
+
+    const stateNames = {
+      AC: "Acre", AL: "Alagoas", AP: "Amapá", AM: "Amazonas", BA: "Bahia",
+      CE: "Ceará", DF: "Distrito Federal", ES: "Espírito Santo", GO: "Goiás",
+      MA: "Maranhão", MT: "Mato Grosso", MS: "Mato Grosso do Sul",
+      MG: "Minas Gerais", PA: "Pará", PB: "Paraíba", PR: "Paraná",
+      PE: "Pernambuco", PI: "Piauí", RJ: "Rio de Janeiro", RN: "Rio Grande do Norte",
+      RS: "Rio Grande do Sul", RO: "Rondônia", RR: "Roraima",
+      SC: "Santa Catarina", SP: "São Paulo", SE: "Sergipe", TO: "Tocantins"
+    };
+
+    const percentages = {
+      AC: "53%", AL: "49%", AP: "55%", AM: "59%", BA: "52%",
+      CE: "46%", DF: "21%", ES: "41%", GO: "50%",
+      MA: "58%", MT: "51%", MS: "37%",
+      MG: "47%", PA: "65%", PB: "45%", PR: "35%",
+      PE: "52%", PI: "47%", RJ: "64%", RN: "56%",
+      RS: "37%", RO: "46%", RR: "40%",
+      SC: "34%", SP: "50%", SE: "51%", TO: "57%"
+    };
+
+    function showMessage() {
+      const select = document.getElementById('state-select');
+      const selectedState = select.value;
+      const messageEl = document.getElementById('result-message');
+      const imageEl = document.getElementById('highlighted-map');
+      const stateResponse = document.getElementById('state-response');
+      const storyContainer = document.getElementById('story-container');
+
+      if (selectedState && data[selectedState] !== undefined) {
+        const stateName = stateNames[selectedState];
+        const count = data[selectedState].toLocaleString('en-US');
+        const percentage = percentages[selectedState];
+
+        messageEl.textContent = `${count} public projects were halted in ${stateName}, in April 2025. This represents ${percentage} of all projects funded by the federal government in the state.`;
+
+        const imagePath = `img/maps/${selectedState.toLowerCase()}.png`;
+
+        // Preload and show image only if it exists
+        const testImage = new Image();
+        testImage.onload = function () {
+          imageEl.src = imagePath;
+          imageEl.style.display = 'block';
+        };
+        testImage.onerror = function () {
+          imageEl.style.display = 'none';
+        };
+        testImage.src = imagePath;
+        stateResponse.style.display = 'block';
+
+        // Show story container as well
+        storyContainer.style.display = 'block';
+
+        messageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        stateResponse.style.display = 'none';
+        messageEl.textContent = "";
+        imageEl.style.display = 'none';
+        storyContainer.style.display = 'none';
+      }
+    }
+
+    function skipToStory() {
+      // Hide intro box
+      document.getElementById('intro-box').style.display = 'none';
+
+      // Hide state-response container
+      document.getElementById('state-response').style.display = 'none';
+
+      // Show story container
+      const storyContainer = document.getElementById('story-container');
+      storyContainer.style.display = 'block';
+
+      // Show map under the story
+      document.getElementById('story-map').style.display = 'block';
+
+      // Scroll to the headline
+      const storyHeadline = document.getElementById('story-headline');
+      if (storyHeadline) {
+        storyHeadline.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  </script>
+
+  <!-- Your existing scrollama and d3 code here -->
+  <script>
+    d3.select("#step1").on('stepin', function (e) {
+      console.log("STEP 1");
+      d3.select("#scrollyPhoto").style("display", "block");
+      d3.select("#scrollyPhoto").attr("src", "/Users/juliaaffonso/Documents/Julia/Lede/Projects/Infrastructure/Pictures/Escola Gover Edison Lobão - Ma/placa_obra_ma.jpeg");
+    });
+
+    d3.select("#step2").on('stepin', function (e) {
+      console.log("STEP 2");
+      d3.select("#scrollyPhoto").style("display", "block");
+      d3.select("#scrollyPhoto").attr("src", "/Users/juliaaffonso/Documents/Julia/Lede/Projects/Infrastructure/Pictures/Escola Gover Edison Lobão - Ma/obra_abandonada_gov_edison_lobao_ma.jpeg");
+    });
+
+    const scroller = scrollama();
+
+    scroller.setup({
+      step: "#scrolly .scrolly-overlay .step",
+      offset: 0.5,
+      debug: false
+    })
+      .onStepEnter(function ({ element, index, direction }) {
+        const event = new CustomEvent('stepin', { detail: { direction: direction } });
+        element.dispatchEvent(event);
+      });
+
+    window.addEventListener("resize", scroller.resize);
+  </script>
+
+  </body>
+
+</html>
