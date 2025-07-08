@@ -72,10 +72,11 @@
     }
 
     p {
-      max-width: 50%;
       font-family: sans-serif;
       margin: 0 auto 2rem auto;
       font-size: 19px;
+      max-width: 90%;
+      /* default for mobile */
     }
 
     #scrolly {
@@ -165,6 +166,10 @@
       #scrolly.side-by-side .sticky-thing {
         order: 1;
         flex-grow: 2;
+      }
+
+      .step p {
+        max-width: 50%;
       }
     }
 
