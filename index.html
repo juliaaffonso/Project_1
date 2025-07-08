@@ -121,7 +121,7 @@
     }
 
     .photoDiv {
-      width: 49%;
+      width: 65%;
       margin-right: 0px;
       margin-left: auto;
       display: block;
@@ -139,6 +139,7 @@
     .hidden {
       visibility: hidden;
     }
+
 
     @media only screen and (min-width: 700px) {
       .chart-container.narrow {
@@ -170,6 +171,20 @@
 
       .step p {
         max-width: 50%;
+      }
+
+      .photoDiv {
+        width: 49%;
+        /* restore side-by-side layout for desktop */
+        margin-left: auto;
+        margin-right: 0;
+      }
+
+      #scrollyPhoto {
+        width: 100%;
+        height: auto;
+        display: block;
+        margin: 0 auto;
       }
     }
 
